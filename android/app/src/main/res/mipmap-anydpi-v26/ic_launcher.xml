@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon (Android 8.0+): the OS masks this into a circle,
+     squircle, rounded square, etc. depending on the device/launcher,
+     so the foreground mark is kept well inside the safe zone (see
+     the ic_launcher_foreground.png generation) rather than filling
+     the whole canvas the way the legacy ic_launcher.png does. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>

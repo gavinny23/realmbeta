@@ -1,0 +1,43 @@
+name: reply_bridge
+description: >
+  App-local plugin that starts/stops a tiny, silent Android foreground
+  service around a notification reply's network work — the standard
+  Android pattern (the same one WhatsApp/Signal/etc. rely on) for
+  making sure Doze/App Standby and per-app battery optimization don't
+  defer or kill that work, even when the person hasn't granted the
+  separate "Unrestricted battery" exemption. Foreground services are
+  specifically exempt from Doze's background-network deferral — that's
+  the whole reason this exists, rather than just doing the network
+  call straight from the notification-response isolate.
+
+  Deliberately built as a real Flutter plugin (flutter.plugin section
+  below), not a MethodChannel wired directly into MainActivity — a
+  channel set up only in MainActivity.configureFlutterEngine() would
+  only exist on the *main* engine. flutter_local_notifications runs
+  its background notification-response callback
+  (chatReplyBackgroundDispatcher, see PushNotificationService) on a
+  separate, disposable headless engine, and the only thing that
+  reliably reaches a channel there is GeneratedPluginRegistrant, which
+  Flutter's tooling builds from exactly this kind of plugin
+  declaration.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.24.0'
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.example.reality_merge.reply_bridge
+        pluginClass: ReplyBridgePlugin
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

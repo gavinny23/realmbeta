@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "532582091105",
+    "project_id": "realm-6f40a",
+    "storage_bucket": "realm-6f40a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532582091105:android:80e48b3585003ce2c1dd20",
+        "android_client_info": {
+          "package_name": "com.example.reality_merge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxYpqyNJ8s-68JBBWlPpqM-evoBfXt_t0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

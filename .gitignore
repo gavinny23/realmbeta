@@ -1,0 +1,23 @@
+# Secrets — never commit the real .env
+.env
+
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+
+# Platform build output
+android/app/debug
+android/app/profile
+android/app/release
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+ios/Pods/
+
+# OS
+.DS_Store
+supabase/*firebase-adminsdk*.json

@@ -1,0 +1,65 @@
+workflows:
+  reality-merge-apk:
+    name: Reality Merge - Build APK
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+      # Set these as "Environment variables" in the Codemagic app settings
+      # (mark them as secure). Group name used below: reality_merge_env
+      groups:
+        - reality_merge_env
+        # Expected variables inside that group:
+        #   SUPABASE_URL
+        #   SUPABASE_ANON_KEY
+        #   MAPBOX_ACCESS_TOKEN
+        #   OPENAI_API_KEY (optional — leave unset in Codemagic to skip it)
+    scripts:
+      - name: Generate missing Android platform folder
+        script: |
+          # This repo only ships lib/ + pubspec.yaml — no native android/
+          # folder. This regenerates just that scaffolding without
+          # touching any existing Dart code. Safe to run every build.
+          flutter create --platforms=android --org com.realitymerge .
+      - name: Ensure Kotlin Android plugin is applied
+        script: |
+          KTS="android/app/build.gradle.kts"
+          GROOVY="android/app/build.gradle"
+          if [ -f "$KTS" ] && ! grep -qE 'id\("(org\.jetbrains\.kotlin\.android|kotlin-android)"\)' "$KTS"; then
+            sed -i 's|id("com.android.application")|id("com.android.application")\n    id("org.jetbrains.kotlin.android")|' "$KTS"
+          fi
+          if [ -f "$GROOVY" ] && ! grep -qE "id ['\"](org\.jetbrains\.kotlin\.android|kotlin-android)['\"]" "$GROOVY"; then
+            sed -i "s|id 'com.android.application'|id 'com.android.application'\n    id 'kotlin-android'|" "$GROOVY"
+          fi
+      - name: Allow ar_flutter_plugin_2 below its declared minSdk
+        script: |
+          # ar_flutter_plugin_2's Android library declares minSdk 28. We keep
+          # the app's own minSdk lower and override the manifest merge check
+          # here — safe only because DeviceCapabilityService (checked in
+          # HomeShell) never builds ARScreen on a device below API 28, so
+          # the plugin's native code is never invoked on an unsupported
+          # device.
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if [ -f "$MANIFEST" ]; then
+            if ! grep -q 'xmlns:tools' "$MANIFEST"; then
+              sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android"|<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"|' "$MANIFEST"
+            fi
+            if ! grep -q 'overrideLibrary' "$MANIFEST"; then
+              sed -i 's|<application|<uses-sdk tools:overrideLibrary="com.uhg0.ar_flutter_plugin_2" />\n    <application|' "$MANIFEST"
+            fi
+          fi
+      - name: Write .env from secure Codemagic variables
+        script: |
+          cat > .env << EOF
+          SUPABASE_URL=$SUPABASE_URL
+          SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+          MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN
+          OPENAI_API_KEY=$OPENAI_API_KEY
+          DEFAULT_UNLOCK_RADIUS_M=50
+          EOF
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build debug APK
+        script: flutter build apk --debug
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
