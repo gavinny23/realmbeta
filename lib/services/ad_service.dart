@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../config/env_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Native Advanced ads for the Updates and Drops feeds. Video native
@@ -42,8 +42,8 @@ class AdService {
   bool get available => _available;
 
   String get _nativeAdUnitId {
-    final fromEnv = EnvConfig.admobNativeAdUnitId;
-    if (fromEnv.trim().isNotEmpty) return fromEnv.trim();
+    final fromEnv = dotenv.env['ADMOB_NATIVE_AD_UNIT_ID'];
+    if (fromEnv != null && fromEnv.trim().isNotEmpty) return fromEnv.trim();
     return _testNativeAdUnitId;
   }
 

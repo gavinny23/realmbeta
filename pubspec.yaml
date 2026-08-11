@@ -19,6 +19,7 @@ dependencies:
   firebase_core: ^3.8.0
   firebase_messaging: ^15.1.5
   flutter_local_notifications: ^18.0.1
+  flutter_dotenv: ^5.1.0
   intl: ^0.19.0
   http: ^1.2.0
   file_picker: ^10.3.9
@@ -42,19 +43,6 @@ dependencies:
   reply_bridge:
     path: packages/reply_bridge
 
-# path_provider_android 2.3.0+ rewrote its Android implementation on
-# top of the `jni`/`jni_flutter` packages, which load libdartjni.so
-# and initialize JNI as soon as the Flutter engine attaches — before
-# Dart's main() runs. That's a suspected source of a native
-# startup crash that Dart-side try/catch can't intercept. Pinning
-# path_provider_android back to its last pre-JNI (pure Kotlin/Java)
-# release removes jni and jni_flutter from the dependency tree
-# entirely. Revisit this override once the JNI-based releases have
-# more real-world mileage, or if this pin turns out not to be the
-# fix — this is our leading theory, not a confirmed root cause yet.
-dependency_overrides:
-  path_provider_android: ">=2.2.0 <2.3.0"
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -64,6 +52,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/branding/realm_logo.png
     - assets/branding/realm_icon_mark.png
     - assets/backgrounds/chat_doodle.png

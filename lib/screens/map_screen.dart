@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../config/env_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:http/http.dart' as http;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' hide Size;
@@ -39,7 +39,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    MapboxOptions.setAccessToken(EnvConfig.mapboxAccessToken);
+    MapboxOptions.setAccessToken(dotenv.env['MAPBOX_ACCESS_TOKEN']!);
 
     _sheetCtrl = AnimationController(
       vsync: this,
@@ -235,7 +235,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     if (to.dropLat == null || to.dropLng == null) return;
     setState(() => _loadingRoute = true);
     try {
-      final token = EnvConfig.mapboxAccessToken;
+      final token = dotenv.env['MAPBOX_ACCESS_TOKEN']!;
       final url = Uri.parse(
         'https://api.mapbox.com/directions/v5/mapbox/walking/'
         '${from.longitude},${from.latitude};'

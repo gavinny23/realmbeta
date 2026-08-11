@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import '../config/env_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 /// A song match returned by AudD — just the two fields the rest of the
@@ -33,8 +33,8 @@ class AuddService {
   final _client = http.Client();
 
   bool get isEnabled {
-    final key = EnvConfig.auddApiKey;
-    return key.trim().isNotEmpty;
+    final key = dotenv.env['AUDD_API_KEY'];
+    return key != null && key.trim().isNotEmpty;
   }
 
   /// Uploads [clipFile] — the already-trimmed clip is plenty for a
@@ -47,8 +47,8 @@ class AuddService {
     // picks up a trailing newline or space — trim it the same way
     // GeneratedImageService does for OPENAI_API_KEY, so that doesn't
     // turn into a silent 401 that looks identical to "no key set".
-    final rawKey = EnvConfig.auddApiKey;
-    if (rawKey.trim().isEmpty) return null;
+    final rawKey = dotenv.env['AUDD_API_KEY'];
+    if (rawKey == null || rawKey.trim().isEmpty) return null;
     final key = rawKey.trim();
 
     try {

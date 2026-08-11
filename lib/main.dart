@@ -3,8 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'config/env_config.dart';
 import 'screens/auth_gate.dart';
 import 'screens/splash_screen.dart';
 import 'services/account_manager_service.dart';
@@ -52,6 +52,7 @@ class _RealityMergeAppState extends State<RealityMergeApp> {
   Future<void> _boot() async {
     final startedAt = DateTime.now();
     try {
+      await dotenv.load(fileName: '.env');
       await ThemeController.instance.init();
       await DataSaverService.instance.init();
       await AdvancedFeaturesService.instance.init();
@@ -75,8 +76,8 @@ class _RealityMergeAppState extends State<RealityMergeApp> {
       // rather than surfaced as a fresh failure.
       try {
         await Supabase.initialize(
-          url: EnvConfig.supabaseUrl,
-          anonKey: EnvConfig.supabaseAnonKey,
+          url: dotenv.env['SUPABASE_URL']!,
+          anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
         ).timeout(const Duration(seconds: 12));
       } catch (e) {
         if (!e.toString().toLowerCase().contains('already')) rethrow;

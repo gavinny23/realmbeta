@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart' show Color;
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
-import '../config/env_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:reply_bridge/reply_bridge.dart';
@@ -834,8 +834,21 @@ class PushNotificationService {
     required String senderName,
     required String originalMessage,
   }) async {
-    final supabaseUrl = EnvConfig.supabaseUrl;
-    final anonKey = EnvConfig.supabaseAnonKey;
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (e) {
+      // Already loaded (main isolate handed this call off directly,
+      // e.g. from the foreground onDidReceiveNotificationResponse
+      // path) — anything else means .env is genuinely missing, which
+      // _accessToken below will fail on anyway.
+      if (!e.toString().toLowerCase().contains('already')) {
+        // Fall through — _accessTokenFor will surface the real error
+        // via its own try/catch and this'll end up in the failure path.
+      }
+    }
+
+    final supabaseUrl = dotenv.env['SUPABASE_URL'];
+    final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
     final fallback = [
       _ChatMessageForDisplay(
           text: originalMessage, fromMe: false, at: DateTime.now()),

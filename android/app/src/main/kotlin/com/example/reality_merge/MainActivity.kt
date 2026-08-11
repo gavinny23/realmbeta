@@ -36,16 +36,19 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        GoogleMobileAdsPlugin.registerNativeAdFactory(
+            flutterEngine,
+            nativeAdFactoryId,
+            NativeAdFactoryImpl(this)
+        )
+
         // Cached under a stable id so SmsGatewayForegroundService can
         // reuse this exact engine (and therefore this exact Dart
         // isolate/EventChannel listener) to push incoming-SMS events
         // even after this Activity itself is destroyed — as long as
         // the process stays alive, which the foreground service's
         // notification is what keeps Android from reclaiming it.
-        FlutterEngineCache.getInstance().put(
-            "sms_gateway_engine",
-            flutterEngine
-        )
+        FlutterEngineCache.getInstance().put("sms_gateway_engine", flutterEngine)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, gestureChannelName)
             .setMethodCallHandler { call, result ->
@@ -104,6 +107,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, nativeAdFactoryId)
         super.cleanUpFlutterEngine(flutterEngine)
     }
 

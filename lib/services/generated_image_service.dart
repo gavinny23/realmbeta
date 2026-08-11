@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import '../config/env_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/news_article.dart';
 
@@ -62,8 +62,8 @@ class GeneratedImageService {
   int _generatedThisSession = 0;
 
   bool get isEnabled {
-    final key = EnvConfig.openaiApiKey;
-    return key.trim().isNotEmpty;
+    final key = dotenv.env['OPENAI_API_KEY'];
+    return key != null && key.trim().isNotEmpty;
   }
 
   /// Best-effort topic check over the title/summary/category — errs
@@ -102,8 +102,8 @@ class GeneratedImageService {
   }
 
   Future<Uint8List?> _requestImage(NewsArticle article) async {
-    final rawKey = EnvConfig.openaiApiKey;
-    if (rawKey.trim().isEmpty) return null;
+    final rawKey = dotenv.env['OPENAI_API_KEY'];
+    if (rawKey == null || rawKey.trim().isEmpty) return null;
     // A key pasted into a GitHub secret (or a local .env) sometimes
     // picks up a trailing newline or space, which turns into an
     // invisible-but-invalid Authorization header and a 401 that looks
