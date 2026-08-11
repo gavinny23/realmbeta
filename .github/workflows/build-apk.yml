@@ -31,15 +31,6 @@ jobs:
       - name: Flutter Doctor
         run: flutter doctor -v
 
-      - name: Create .env
-        run: |
-          cat > .env <<EOF
-          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
-          MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_ACCESS_TOKEN }}
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          EOF
-
       - name: Clean project
         run: |
           flutter clean
@@ -87,11 +78,17 @@ jobs:
           fi
 
       - name: Build Release APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_ACCESS_TOKEN }} \
+            --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            --dart-define=AUDD_API_KEY=${{ secrets.AUDD_API_KEY }} \
+            --dart-define=ADMOB_NATIVE_AD_UNIT_ID=${{ secrets.ADMOB_NATIVE_AD_UNIT_ID }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Realm-release
           path: build/app/outputs/flutter-apk/app-release.apk
-          
