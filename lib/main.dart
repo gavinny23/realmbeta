@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth_gate.dart';
 import 'screens/splash_screen.dart';
 import 'services/account_manager_service.dart';
+import 'services/ad_service.dart';
 import 'services/advanced_features_service.dart';
 import 'services/cheat_code_service.dart';
 import 'services/data_saver_service.dart';
@@ -126,6 +127,13 @@ class _RealityMergeAppState extends State<RealityMergeApp> {
       // "turn off"), bring it back online in the background rather
       // than requiring a trip back to the Gateway Setup screen.
       unawaited(SmsGatewayBridge.instance.resumeIfNeeded());
+      // Same reasoning again, but more so: an ad network is the last
+      // thing that should ever get to hold the splash screen open or
+      // turn into a boot-error banner. AdService.init() never throws
+      // (see its own doc comment) — this just gets it started early
+      // so it's usually already resolved by the time the feed's
+      // first native ad slot scrolls into view.
+      unawaited(AdService.instance.init());
     } on TimeoutException {
       _bootstrapError =
           'Taking too long to connect — check your internet connection '

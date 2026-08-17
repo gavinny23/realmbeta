@@ -13,6 +13,7 @@ import '../services/push_notification_service.dart';
 import '../theme/rm_theme.dart';
 import '../widgets/tutorial_overlay.dart';
 import '../widgets/drop_card.dart';
+import '../widgets/native_ad_card.dart';
 import '../widgets/redrop_feed_card.dart';
 import '../widgets/messages_drawer.dart';
 import 'create_drop_screen.dart';
@@ -627,13 +628,31 @@ class FeedScreenState extends State<FeedScreen> with TickerProviderStateMixin {
     // it happens, rather than requiring a scroll past every nearby
     // drop first.
     final redropCount = _redrops.length;
+    final realCount = redropCount + visible.length;
+    // One native ad slotted in after every _adInterval real feed
+    // items (redrops + drops combined, in on-screen order) — never
+    // before the first _adInterval, and never at all for a feed too
+    // short to have a natural break in it. adCount here must agree
+    // exactly with the isAdSlot/realIndex math in itemBuilder below,
+    // or the two get out of sync and either crash on an out-of-range
+    // index or silently drop a real item.
+    const adInterval = 6;
+    final adCount = realCount ~/ adInterval;
+    final itemCount = realCount + adCount;
+
     return ListView.builder(
       physics: AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(16, 8, 16, 100),
-      itemCount: redropCount + visible.length,
+      itemCount: itemCount,
       itemBuilder: (context, index) {
-        if (index < redropCount) {
-          final item = _redrops[index];
+        final isAdSlot = (index + 1) % (adInterval + 1) == 0;
+        if (isAdSlot) {
+          return NativeAdCard(key: ValueKey('ad_$index'));
+        }
+        final realIndex = index - (index ~/ (adInterval + 1));
+
+        if (realIndex < redropCount) {
+          final item = _redrops[realIndex];
           return Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: RedropFeedCard(
@@ -645,11 +664,11 @@ class FeedScreenState extends State<FeedScreen> with TickerProviderStateMixin {
             ),
           );
         }
-        final drop = visible[index - redropCount];
+        final drop = visible[realIndex - redropCount];
         return AnimatedDropCard(
           key: ValueKey(drop.id),
           drop: drop,
-          index: index - redropCount,
+          index: realIndex - redropCount,
           onTap: () => _openDrop(drop),
         );
       },

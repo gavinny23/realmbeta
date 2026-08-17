@@ -52,6 +52,19 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="new_stories"/>
 
+        <!-- AdMob app ID — required by the SDK at process start; its
+             absence is one of the most common causes of an immediate
+             crash on launch once google_mobile_ads is added. This is
+             Google's public sample app ID, safe to ship as-is while
+             testing (see AdConfig in lib/services/ad_service.dart for
+             the matching test ad unit IDs). Swap it for your real
+             AdMob app ID from the AdMob console before a production
+             release — it's tied to the app, not to debug/release, so
+             it does not need to vary by build type. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
