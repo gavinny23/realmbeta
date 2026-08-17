@@ -9,7 +9,6 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 
 /// Handles the "reality_merge/gesture_exclusion" channel so Dart can
 /// reserve a strip of the screen (e.g. the left edge, for the
@@ -28,19 +27,8 @@ class MainActivity : FlutterActivity() {
     private val smsChannelName = "reality_merge/sms_gateway"
     private val smsEventChannelName = "reality_merge/sms_gateway/incoming"
 
-    /// Matches the factoryId Dart passes to `AdWidget`/`NativeAd` in
-    /// AdService — must be identical on both sides or the ad silently
-    /// never renders.
-    private val nativeAdFactoryId = "realmFeedCard"
-
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
-        GoogleMobileAdsPlugin.registerNativeAdFactory(
-            flutterEngine,
-            nativeAdFactoryId,
-            NativeAdFactoryImpl(this)
-        )
 
         // Cached under a stable id so SmsGatewayForegroundService can
         // reuse this exact engine (and therefore this exact Dart
@@ -104,11 +92,6 @@ class MainActivity : FlutterActivity() {
                     IncomingSmsBridge.detach()
                 }
             })
-    }
-
-    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
-        GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, nativeAdFactoryId)
-        super.cleanUpFlutterEngine(flutterEngine)
     }
 
     /// Splits into multiple parts automatically for bodies longer than

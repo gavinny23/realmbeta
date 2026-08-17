@@ -52,14 +52,6 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="new_stories"/>
 
-        <!-- AdMob — Google's public *test* App ID (safe to ship, never
-             serves real ads/real revenue). Swap this for the real App
-             ID from the AdMob console before release; see AdService
-             for the matching ad-unit-ID swap. -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
-
         <activity
             android:name=".MainActivity"
             android:exported="true"

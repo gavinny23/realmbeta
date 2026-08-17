@@ -6,10 +6,8 @@ import '../services/news_service.dart';
 import '../services/supabase_service.dart';
 import '../services/local_cache_service.dart';
 import '../services/article_image_service.dart';
-import '../services/ad_service.dart';
 import '../services/generated_image_service.dart';
 import '../theme/rm_theme.dart';
-import '../widgets/native_ad_card.dart';
 import '../widgets/news_card.dart';
 import 'news_comments_sheet.dart';
 import 'news_detail_screen.dart';
@@ -375,7 +373,7 @@ class UpdatesViewState extends State<UpdatesView> {
                   controller: _scrollController,
                   physics: AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.fromLTRB(16, 8, 16, 100),
-                  itemCount: AdService.itemCountWithAds(filtered.length) +
+                  itemCount: filtered.length +
                       (_offline ? 1 : 0) +
                       (_isGossipFilter ? 1 : 0),
                   separatorBuilder: (_, __) => SizedBox(height: 12),
@@ -430,14 +428,7 @@ class UpdatesViewState extends State<UpdatesView> {
                         ),
                       );
                     }
-                    final feedPos = index - bannerCount;
-                    if (AdService.isAdSlot(feedPos)) {
-                      return NativeAdCard(
-                        key: ValueKey('updates_native_ad_$feedPos'),
-                      );
-                    }
-                    final article =
-                        filtered[AdService.contentIndexForSlot(feedPos)];
+                    final article = filtered[index - bannerCount];
                     return _NewsCardWithCount(
                       key: ValueKey(article.id),
                       article: article,

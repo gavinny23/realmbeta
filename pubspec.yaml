@@ -39,7 +39,6 @@ dependencies:
   on_audio_query: ^2.9.0
   just_audio: ^0.9.40
   path_provider: ^2.1.4
-  google_mobile_ads: ^7.0.0
   reply_bridge:
     path: packages/reply_bridge
 

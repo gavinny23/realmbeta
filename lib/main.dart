@@ -8,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth_gate.dart';
 import 'screens/splash_screen.dart';
 import 'services/account_manager_service.dart';
-import 'services/ad_service.dart';
 import 'services/advanced_features_service.dart';
 import 'services/cheat_code_service.dart';
 import 'services/data_saver_service.dart';
@@ -96,15 +95,6 @@ class _RealityMergeAppState extends State<RealityMergeApp> {
       // whatever this account last had saved (toggle + any active
       // verified badge) now that namespacing points at the right one.
       unawaited(CheatCodeService.instance.load());
-      // Not awaited on purpose, same reasoning as the two services
-      // below: the Mobile Ads SDK's own init call is what's slow (it
-      // does its own network round trip), and nothing on the splash
-      // screen depends on an ad being ready. AdService.available just
-      // stays false — meaning NativeAdCard renders nothing — for
-      // however many cards get built before this finishes, which in
-      // practice is none, since a person can't reach the Updates or
-      // Drops tab before the splash screen itself is done.
-      unawaited(AdService.instance.init());
       // Best-effort and deliberately never allowed to fail boot: until
       // android/app/google-services.json is actually dropped in (see
       // the comment in app/build.gradle.kts), Firebase.initializeApp()

@@ -4,7 +4,6 @@ import 'package:geolocator/geolocator.dart' as geo;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/drop.dart';
 import '../models/redrop_feed_item.dart';
-import '../services/ad_service.dart';
 import '../services/location_service.dart';
 import '../services/supabase_service.dart';
 import '../services/onboarding_service.dart';
@@ -14,7 +13,6 @@ import '../services/push_notification_service.dart';
 import '../theme/rm_theme.dart';
 import '../widgets/tutorial_overlay.dart';
 import '../widgets/drop_card.dart';
-import '../widgets/native_ad_card.dart';
 import '../widgets/redrop_feed_card.dart';
 import '../widgets/messages_drawer.dart';
 import 'create_drop_screen.dart';
@@ -629,21 +627,13 @@ class FeedScreenState extends State<FeedScreen> with TickerProviderStateMixin {
     // it happens, rather than requiring a scroll past every nearby
     // drop first.
     final redropCount = _redrops.length;
-    final contentCount = redropCount + visible.length;
     return ListView.builder(
       physics: AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(16, 8, 16, 100),
-      itemCount: AdService.itemCountWithAds(contentCount),
+      itemCount: redropCount + visible.length,
       itemBuilder: (context, index) {
-        if (AdService.isAdSlot(index)) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: 12),
-            child: NativeAdCard(key: ValueKey('drops_native_ad_$index')),
-          );
-        }
-        final contentIndex = AdService.contentIndexForSlot(index);
-        if (contentIndex < redropCount) {
-          final item = _redrops[contentIndex];
+        if (index < redropCount) {
+          final item = _redrops[index];
           return Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: RedropFeedCard(
@@ -655,12 +645,11 @@ class FeedScreenState extends State<FeedScreen> with TickerProviderStateMixin {
             ),
           );
         }
-        final dropIndex = contentIndex - redropCount;
-        final drop = visible[dropIndex];
+        final drop = visible[index - redropCount];
         return AnimatedDropCard(
           key: ValueKey(drop.id),
           drop: drop,
-          index: dropIndex,
+          index: index - redropCount,
           onTap: () => _openDrop(drop),
         );
       },
