@@ -1,7 +1,11 @@
 package com.example.reality_merge
 
+import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.graphics.Rect
 import android.os.Build
+import android.os.Bundle
 import android.telephony.SmsManager
 import android.telephony.TelephonyManager
 import io.flutter.embedding.android.FlutterActivity
@@ -10,6 +14,7 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
+import java.io.File
 
 /// Handles the "reality_merge/gesture_exclusion" channel so Dart can
 /// reserve a strip of the screen (e.g. the left edge, for the
@@ -32,6 +37,38 @@ class MainActivity : FlutterActivity() {
     // exactly — see ReamNativeAdFactory.kt for what a mismatch here
     // actually does (nothing crashes; the ad slot just never loads).
     private val nativeAdFactoryId = "realmFeedNativeAd"
+
+    // Diagnostic only — see ReamApplication for where this file gets
+    // written. Runs on whatever launch is the first one to actually
+    // reach MainActivity.onCreate after a crash, which for a crash
+    // this early is usually the very next app open. Shown via a
+    // plain native AlertDialog (not a Flutter widget) specifically
+    // because this needs to work even if the crash happens somewhere
+    // that prevents Flutter itself from ever getting a first frame.
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        showLastCrashIfAny()
+    }
+
+    private fun showLastCrashIfAny() {
+        val file = File(filesDir, "last_crash.txt")
+        if (!file.exists()) return
+        val text = try {
+            file.readText()
+        } catch (e: Exception) {
+            return
+        }
+        file.delete()
+        AlertDialog.Builder(this)
+            .setTitle("Last crash")
+            .setMessage(text)
+            .setPositiveButton("Copy") { _, _ ->
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("crash log", text))
+            }
+            .setNegativeButton("Dismiss", null)
+            .show()
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
