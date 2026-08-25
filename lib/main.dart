@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,13 +31,56 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await PushNotificationService.instance.showFromBackground(message);
 }
 
+/// Forwards an error to Crashlytics if Firebase is up yet, otherwise
+/// just prints it. Firebase.initializeApp() happens a few lines into
+/// `_boot()` below (not before runApp — see the comment on `main()`),
+/// so there's a brief window at the very start of the app's life
+/// where a crash can happen before Crashlytics is able to catch it.
+/// That's an unavoidable trade-off of keeping the splash screen
+/// instant rather than blocking on Firebase first; everything after
+/// that first moment — including the AdMob init path — is covered.
+void _reportError(Object error, StackTrace stack, {bool fatal = false}) {
+  if (Firebase.apps.isEmpty) {
+    debugPrint('Error before Firebase was ready: $error\n$stack');
+    return;
+  }
+  FirebaseCrashlytics.instance.recordError(error, stack, fatal: fatal);
+}
+
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  // Call runApp() immediately, before any of the async setup below —
-  // that's what lets Flutter start painting our own branded splash
-  // screen right away instead of leaving the plain native launch
-  // screen up for the whole duration of that setup.
-  runApp(RealityMergeApp());
+  runZonedGuarded(() {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Catch Flutter framework errors (widget build/layout/paint
+    // errors) and forward them instead of just printing to the
+    // console — this is the main channel for anything that would
+    // otherwise only show up in `adb logcat`.
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      _reportError(details.exception, details.stack ?? StackTrace.current,
+          fatal: true);
+    };
+
+    // Catches everything FlutterError.onError doesn't: errors thrown
+    // from platform-channel callbacks (this is where a native AdMob
+    // failure surfaces on the Dart side if it does at all), timers,
+    // and other non-widget async code running outside a Flutter
+    // error zone.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      _reportError(error, stack, fatal: true);
+      return true;
+    };
+
+    // Call runApp() immediately, before any of the async setup below —
+    // that's what lets Flutter start painting our own branded splash
+    // screen right away instead of leaving the plain native launch
+    // screen up for the whole duration of that setup.
+    runApp(RealityMergeApp());
+  }, (error, stack) {
+    // Anything thrown in this zone that isn't already caught above
+    // (e.g. an error from an `unawaited(...)` Future) ends up here.
+    _reportError(error, stack, fatal: true);
+  });
 }
 
 class RealityMergeApp extends StatefulWidget {
@@ -105,6 +150,15 @@ class _RealityMergeAppState extends State<RealityMergeApp> {
       // change needed here.
       try {
         await Firebase.initializeApp();
+        // From here on, any fatal Flutter error goes to Crashlytics
+        // via the FlutterError.onError / PlatformDispatcher.onError
+        // hooks set up in main(). This also turns on Crashlytics'
+        // own native (non-Dart) crash reporting, which is the piece
+        // that would actually catch a genuine native AdMob/Play
+        // Services crash — visible afterwards in the Firebase console
+        // without needing adb or the Play Console.
+        await FirebaseCrashlytics.instance
+            .setCrashlyticsCollectionEnabled(true);
         FirebaseMessaging.onBackgroundMessage(
             _firebaseMessagingBackgroundHandler);
         unawaited(PushNotificationService.instance.init());

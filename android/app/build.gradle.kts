@@ -14,6 +14,7 @@ plugins {
 // CI/local builds keep working exactly as before until then.
 if (file("google-services.json").exists()) {
     apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
 }
 
 android {
@@ -43,6 +44,15 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Wired up so proguard-rules.pro (AdMob/Supabase/Mapbox keep
+            // rules) is actually honored the moment minification is
+            // switched on — previously this file existed but nothing
+            // referenced it, so enabling minifyEnabled later would have
+            // silently stripped classes those rules exist to protect.
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

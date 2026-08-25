@@ -26,6 +26,13 @@ plugins {
     // app/build.gradle.kts once google-services.json exists — see the
     // comment there for why.
     id("com.google.gms.google-services") version "4.4.2" apply false
+    // Crashlytics — same conditional-apply pattern as google-services
+    // below, since both need google-services.json to actually do
+    // anything. This is what gives you real native + Dart stack
+    // traces (including AdMob-adjacent native crashes adb/Play
+    // Console can't easily be used to inspect right now) once that
+    // file is dropped in.
+    id("com.google.firebase.crashlytics") version "3.0.6" apply false
 }
 
 include(":app")

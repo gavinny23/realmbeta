@@ -23,6 +23,16 @@
 -keep class com.mapbox.** { *; }
 -dontwarn com.mapbox.**
 
+# AdMob / Google Mobile Ads (google_mobile_ads) — the native ad
+# factory (ReamNativeAdFactory.kt) and the SDK's own reflective
+# lookups need these kept, or a minified release build crashes on
+# the first ad load / init instead of the debug build you tested.
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.ads.** { *; }
+-keep interface com.google.android.gms.ads.** { *; }
+-keep class io.flutter.plugins.googlemobileads.** { *; }
+-dontwarn com.google.android.gms.ads.**
+
 # OkHttp / Retrofit (transitively used by several plugins)
 -dontwarn okhttp3.**
 -dontwarn okio.**
